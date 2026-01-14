@@ -10,6 +10,15 @@ This pipeline processes trajectory data through five main stages:
 3. Feature extraction using a convolutional autoencoder
 4. Behavior state classification with Gaussian Hidden Markov Models
 5. Dimensionality reduction and visualization using UMAP
+ 
+ The data is not being uploaded because it is too big
+ 
+ Each of these steps can be skip if you already got the data, 
+ if you need to skip any step, run the code as below:
+    python main.py \
+    --skip-preprocessing \
+    --skip-training \
+    --skip-visualization
 
 ## Project Structure
 

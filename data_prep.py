@@ -213,20 +213,28 @@ def smooth_and_impute_all(df: pd.DataFrame,
     
     # 分组平滑（减少 groupby 次数）
     processed = []
+    missing_stats = []
     for (id_val, bodypart_val), group in df.groupby([UID_COL_NAME, 'bodypart']):
         # 按帧排序
         group = group.sort_values(frame_col).copy()
-        
+        # 统计缺失点数（x或y为NA的点）
+        n_missing = group[x_col].isna().sum() + group[y_col].isna().sum()
+        missing_stats.append({
+            'trial': id_val,
+            'bodypart': bodypart_val,
+            'missing_points': n_missing
+        })
         # 对所有需要平滑的列进行平滑
         for col in cols_to_smooth:
             if col in group.columns:
                 group[col] = _smooth_array(group[col].values, max_speed=max_speed)
-        
         processed.append(group)
-    
+    if missing_stats:
+        print("[missing points per trial/bodypart]:")
+        for stat in missing_stats:
+            print(f"trial={stat['trial']}, bodypart={stat['bodypart']}, missing_points={stat['missing_points']}")
     out = pd.concat(processed, ignore_index=True) if processed else df.copy()
     print(f"[step] smoothing completed, result rows={len(out)}")
-    
     return out
 
 # ---- 高层流程示例 ----
