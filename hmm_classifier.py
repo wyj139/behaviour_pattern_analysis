@@ -61,8 +61,8 @@ def train_gaussian_hmm(embedding_df: pd.DataFrame,
     X_concat = np.vstack([g[emb_cols].values for g in groups])
     
     if VERBOSE:
-        print(f"训练数据形状: {X_concat.shape}")
-        print(f"序列数: {len(lengths)}, 平均长度: {np.mean(lengths):.1f}")
+        print(f"Training data shape: {X_concat.shape}")
+        print(f"Number of sequences: {len(lengths)}, Average length: {np.mean(lengths):.1f}")
     
     # train HMM
     # 训练HMM
@@ -104,10 +104,12 @@ def train_gaussian_hmm(embedding_df: pd.DataFrame,
             
             if s == cur_state:
                 # 同一状态，扩展窗口
+                # if the state is the same, extend the segment
                 windows.append(int(grp.loc[i, 'window_id']))
                 seg_end_frame = max(seg_end_frame, int(grp.loc[i, 'end_frame']))
             else:
                 # 状态改变，保存当前段
+                # if the state changes, save the current segment
                 segments.append({
                     'id': pid,
                     'state': int(cur_state),
@@ -118,12 +120,14 @@ def train_gaussian_hmm(embedding_df: pd.DataFrame,
                 })
                 
                 # 开始新段
+                # start a new segment
                 cur_state = s
                 windows = [int(grp.loc[i, 'window_id'])]
                 seg_start_frame = int(grp.loc[i, 'start_frame'])
                 seg_end_frame = int(grp.loc[i, 'end_frame'])
         
         # 保存最后一段
+        # save the last segment
         segments.append({
             'id': pid,
             'state': int(cur_state),
@@ -136,21 +140,24 @@ def train_gaussian_hmm(embedding_df: pd.DataFrame,
     segments_df = pd.DataFrame(segments)
     
     if VERBOSE:
-        print(f"生成 {len(segments_df)} 个状态段")
+        print(f"generate {len(segments_df)} state segments")
     
-    # 保存结果
+    # save results
     if output_dir:
         os.makedirs(output_dir, exist_ok=True)
         
         # 保存带状态的窗口数据
+        # save windows with states
         window_output_path = os.path.join(output_dir, f'windows_with_states_n{n_states}.csv')
         window_df_sorted.to_csv(window_output_path, index=False)
         
         # 保存状态段
+        # save state segments
         segments_output_path = os.path.join(output_dir, f'state_segments_n{n_states}.csv')
         segments_df.to_csv(segments_output_path, index=False)
         
         # 保存转移矩阵
+        # save transition matrix
         transition_output_path = os.path.join(output_dir, f'transition_matrix_n{n_states}.csv')
         trans_df = pd.DataFrame(
             model.transmat_,
@@ -160,9 +167,9 @@ def train_gaussian_hmm(embedding_df: pd.DataFrame,
         trans_df.to_csv(transition_output_path)
         
         if VERBOSE:
-            print(f"保存窗口状态到: {window_output_path}")
-            print(f"保存状态段到: {segments_output_path}")
-            print(f"保存转移矩阵到: {transition_output_path}")
+            print(f"save windows with states to: {window_output_path}")
+            print(f"save state segments to: {segments_output_path}")
+            print(f"save transition matrix to: {transition_output_path}")
     
     return window_df_sorted, model.transmat_, model, segments_df
 
@@ -172,14 +179,21 @@ def analyze_state_transitions(transition_matrix: np.ndarray,
                               output_dir: Optional[str] = None) -> pd.DataFrame:
     """
     分析状态转移概率
+    analze state transition probabilities
     
     参数:
+    parameters:
         transition_matrix: 转移概率矩阵
+        transistion_matrix: Transition probability matrix
         n_states: 状态数
+        n_states: Number of states
         output_dir: 输出目录
+        output_dir: Output directory
     
     返回:
+    returns:
         状态转移统计数据框
+        DataFrame of state transition statistics
     """
     # 计算每个状态的主要转移目标
     transitions = []
@@ -209,7 +223,7 @@ def analyze_state_transitions(transition_matrix: np.ndarray,
         trans_df.to_csv(output_path, index=False)
         
         if VERBOSE:
-            print(f"保存状态转移分析到: {output_path}")
+            print(f"save state transition analysis to: {output_path}")
     
     return trans_df
 
@@ -219,14 +233,20 @@ def get_state_statistics(window_df_with_states: pd.DataFrame,
                          output_dir: Optional[str] = None) -> pd.DataFrame:
     """
     计算状态统计信息
-    
+    calculate state statistics
     参数:
+    parameters:
         window_df_with_states: 带状态的窗口数据框
+        window_df_with_states: DataFrame with window states
         segments_df: 状态段数据框
+        segments_df: DataFrame of state segments
         output_dir: 输出目录
+        output_dir: Output directory
     
     返回:
+    returns:
         状态统计数据框
+        DataFrame of state statistics
     """
     stats = []
     
@@ -246,7 +266,7 @@ def get_state_statistics(window_df_with_states: pd.DataFrame,
     stats_df = pd.DataFrame(stats)
     
     if VERBOSE:
-        print("\n状态统计:")
+        print("\nState statistics:")
         print(stats_df.to_string(index=False))
     
     if output_dir:
@@ -256,6 +276,6 @@ def get_state_statistics(window_df_with_states: pd.DataFrame,
         stats_df.to_csv(output_path, index=False)
         
         if VERBOSE:
-            print(f"保存状态统计到: {output_path}")
+            print(f"save state statistics to: {output_path}")
     
     return stats_df

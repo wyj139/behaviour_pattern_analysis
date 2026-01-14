@@ -11,7 +11,8 @@ from config import (
     UID_COLS, UID_COL_NAME, UID_SEP,
     SMOOTH_MAX_SPEED, INTERPOLATE_LIMIT_DIRECTION,
     FILLNA_METHODS, PAD_VALUE_IF_ALL_NA, VERBOSE,
-    LIKELIHOOD_THRESHOLD
+    LIKELIHOOD_THRESHOLD,
+    PREPROCESSED_DATA_DIR
 )
 
 #I/O helpers
@@ -301,5 +302,5 @@ if __name__ == "__main__":
                                       cue_type=None,
                                       uid_cols=UID_COLS,
                                       uid_col_name=UID_COL_NAME,
-                                      out_base=OUTPUT_BASE_DIR)
+                                      out_base=PREPROCESSED_DATA_DIR)
     print("Complete. outputs:", res)

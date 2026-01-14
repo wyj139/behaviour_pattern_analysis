@@ -1,6 +1,6 @@
 """
-主流程文件
-功能：整合所有模块，完成完整的数据分析流程
+main.py
+Function: Integrate all modules to complete the full data analysis pipeline
 """
 import os
 import argparse
@@ -47,21 +47,34 @@ def run_pipeline(
                 skip_vis_window_coordinate_umap: bool = SKIP_VIS_WINDOW_COORDINATE_UMAP):
     """
     完整的分析流程
+    analysis pipeline
     
     参数:
+    parameters:
         input_file: 输入数据文件路径
         output_base_dir: 输出基础目录
         reference_bodyparts: 用于计算中心的参考点
+         body parts used to calculate the center
         window_size: 窗口大小
+         window size
         window_stride: 窗口步长
+         window stride
         emb_dim: 嵌入维度
+         embedding dimension
         batch_size: 批次大小
+         batch size
         num_epochs: 训练轮数
+         number of training epochs
         learning_rate: 学习率
+         learning rate
         n_states: HMM状态数
+         number of HMM states
         color_options: UMAP染色选项
+         UMAP color options
         skip_preprocessing: 跳过预处理
+         skip preprocessing
         skip_windowing: 跳过窗口划分
+         skip windowing
         skip_training: 跳过模型训练
         skip_hmm: 跳过HMM分类
         skip_visualization: 跳过可视化
@@ -71,20 +84,20 @@ def run_pipeline(
     
     if VERBOSE:
         print("=" * 80)
-        print("开始行为模式分析流程")
+        print("starting analysis pipeline...")
         print("=" * 80)
-        print(f"输出目录: {output_base_dir}")
-        print(f"窗口大小: {window_size}, 步长: {window_stride}")
-        print(f"嵌入维度: {emb_dim}, 训练轮数: {num_epochs}")
-        print(f"HMM状态数: {n_states}")
+        print(f"output directory: {output_base_dir}")
+        print(f"window size: {window_size}, window stride: {window_stride}")
+        print(f"embedding dimension: {emb_dim}, number of training epochs: {num_epochs}")
+        print(f"number of HMM states: {n_states}")
         print("=" * 80)
     
-    # ========== 步骤1: 数据预处理 ==========
+    # ========== 步骤1: 数据预处理  data preprocessing ==========
         print("loading preprocessed data...")
         preprocessed_path = os.path.join(output_base_dir, 'preprocessed_data.csv')
         df = pd.read_csv(preprocessed_path)
     
-    # ========== 步骤2: 窗口划分 ==========
+    # ========== 步骤2: 窗口划分  windowing ==========
     if not skip_windowing:
         print("process windowing data...")
         window_df = create_windows_by_bodypart(
@@ -99,18 +112,20 @@ def run_pipeline(
         from windowing import load_window_data
         window_df = load_window_data(window_path)
     
-    # ========== 步骤3: 训练自动编码器 ==========
+    # ========== 步骤3: 训练自动编码器  training autoencoder ==========
     if not skip_training:
         print("training autoencoder model...")
         
         # 获取bodypart数量来确定输入数据的形状
+        # get the number of bodyparts to determine the input shape
         n_bodyparts = window_df.iloc[0]['n_bodyparts'] if 'n_bodyparts' in window_df.columns else 1
         
         if VERBOSE:
-            print(f"检测到 {n_bodyparts} 个bodypart用于autoencoder训练")
-            print(f"模型输入形状: (batch_size, {2*n_bodyparts}, {window_size})")
+            print(f"detect {n_bodyparts} bodyparts for autoencoder training")
+            print(f"model input shape: (batch_size, {2*n_bodyparts}, {window_size})")
         
-        # 为每个bodypart单独训练或合并训练（这里简化为合并）
+        # 为每个bodypart合并训练
+        #train for all bodyparts together 
         model, loss_history = train_autoencoder(
             window_df,
             window_size=window_size,
@@ -121,13 +136,13 @@ def run_pipeline(
             output_dir=output_base_dir
         )
         
-        # 保存模型
+        # 保存模型 save model
         model_path = os.path.join(output_base_dir, 'autoencoder_model.pth')
         torch.save(model.state_dict(), model_path)
         if VERBOSE:
             print(f"save model in: {model_path}")
         
-        # 提取嵌入
+        # 提取嵌入 extract embeddings
         print("extracting embeddings...")
         embedding_df = extract_embeddings(
             model,
@@ -141,7 +156,7 @@ def run_pipeline(
         embedding_path = os.path.join(output_base_dir, 'embeddings.csv')
         embedding_df = pd.read_csv(embedding_path)
     
-    # ========== 步骤4: HMM状态分类 ==========
+    # ========== 步骤4: HMM状态分类  HMM state classification ==========
     if not skip_hmm:
         print(f"\n[4/5] HMM state classification (n_states={n_states})...")
         
@@ -151,11 +166,11 @@ def run_pipeline(
             output_dir=output_base_dir
         )
         
-        # 分析转移矩阵
+        # 分析转移矩阵 analyze transition matrix
         print("analyzing state transitions...")
         analyze_state_transitions(trans_matrix, n_states, output_dir=output_base_dir)
         
-        # 计算状态统计
+        # 计算状态统计 calculate state statistics
         print("calculating state statistics...")
         get_state_statistics(window_with_states, segments_df, output_dir=output_base_dir)
     else:
@@ -166,7 +181,7 @@ def run_pipeline(
         else:
             window_with_states = embedding_df
     
-    # ========== 步骤5: 可视化visualization==========
+    # ========== 步骤5: 可视化  visualization ==========
     if not skip_visualization:
         print("\n[5/5] generating visualizations...")
         
