@@ -5,6 +5,7 @@ from typing import List
 # 输入文件路径（可在运行时通过参数覆盖）
 RAW_META_CSV: str = "dlc_with_housing.csv"
 RAW_TIMESERIES_CSV: str = "train_data.csv"
+PREPROCESSED_DATA_DIR: str = "prepared_data"
 OUTPUT_BASE_DIR: str = "prepared_data/1+all_back_point"
 
 # ==================== UID 生成配置 ====================
