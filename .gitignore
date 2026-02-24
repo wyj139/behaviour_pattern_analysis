@@ -1,20 +1,8 @@
-# ---- Python / virtual env ----
-.venv/
-venv/
 __pycache__/
 *.pyc
-
-# ---- Jupyter ----
-.ipynb_checkpoints/
-
-# ---- Data (DO NOT TRACK) ----
-*.csv
-
-# ---- Model outputs ----
-*.pt
+.venv/
 *.pth
-*.h5
-*.ckpt
-
-# ---- OS ----
+prepared_data/
+dlc_with_housing.csv
+final_trial_duration_with_housing.csv
 .DS_Store
