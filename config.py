@@ -6,7 +6,7 @@ from typing import List
 RAW_META_CSV: str = "dlc_with_housing.csv"
 RAW_TIMESERIES_CSV: str = "train_data.csv"
 PREPROCESSED_DATA_DIR: str = "prepared_data"
-OUTPUT_BASE_DIR: str = "prepared_data/1+all_back_point"
+OUTPUT_BASE_DIR: str = "prepared_data/all_back_point"
 
 # ==================== UID 生成配置 ====================
 UID_COLS: List[str] = ["day", "pig", "trial"]
